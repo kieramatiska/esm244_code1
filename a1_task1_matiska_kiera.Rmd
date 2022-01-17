@@ -1,0 +1,24 @@
+---
+title: "HW 1"
+author: "Kiera Matiska"
+date: "1/16/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# attach packages
+library(tidyverse)
+library(here)
+library(patchwork)
+library(cowplot)
+library(readxl)
+```
+
+## Read in data
+
+```{r}
+amphibians <- read_csv(here("data", "sierra_amphibians.csv"))
+```
+
