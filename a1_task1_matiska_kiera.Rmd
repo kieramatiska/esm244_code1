@@ -13,12 +13,44 @@ library(tidyverse)
 library(here)
 library(patchwork)
 library(cowplot)
-library(readxl)
+library(lubridate)
+library(broom)
+library(janitor)
 ```
 
 ## Read in data
 
 ```{r}
-amphibians <- read_csv(here("data", "sierra_amphibians.csv"))
+amphibians <- read_csv(here("data", "sierra_amphibians.csv")) # read in the csv file
+```
+
+## Wrangle Data for first visualization
+
+```{r}
+# change survey_date column to a value with only the year
+amphibians_date <- amphibians %>% # identify dataset
+  mutate(survey_date = year(mdy(survey_date))) # column calls only year
+
+# Create data subset
+amphibians_subset <- amphibians_date %>% # identify data set
+  select(survey_date, amphibian_species, amphibian_life_stage) %>% # Only select certain columns
+  filter(amphibian_species == "RAMU", amphibian_life_stage != "EggMass") # filter for species "RAMU" and remove "EggMass" life stage
+
+# create new dataset with species name spelled out
+amphibians_ramu <- amphibians_subset %>% 
+  mutate(amphibian_species = case_when(
+    amphibian_species == "RAMU" ~ "Rana muscosa"
+  ))
+
+# create a summary table to find counts of Rana muscosa by year and life stage
+ramu_summary <- amphibians_ramu %>% 
+  group_by(survey_date, amphibian_life_stage) %>% 
+  summarize(count = n())
+
+# create a viualizing plotting year and life stage against number of individuals
+ggplot(data = ramu_summary,
+       aes(x = survey_date, y = count)) +
+  geom_col() +
+  facet_wrap(~amphibian_life_stage)
 ```
 
