@@ -14,8 +14,6 @@ library(here)
 library(patchwork)
 library(cowplot)
 library(lubridate)
-library(broom)
-library(janitor)
 ```
 
 ## Read in data
@@ -28,7 +26,7 @@ amphibians <- read_csv(here("data", "sierra_amphibians.csv")) # read in the csv 
 
 ```{r}
 # change survey_date column to a value with only the year
-amphibians_date <- amphibians %>% # identify dataset
+amphibians_date <- amphibians %>% # identify data set
   mutate(survey_date = year(mdy(survey_date))) # column calls only year
 
 # Create data subset
@@ -36,21 +34,31 @@ amphibians_subset <- amphibians_date %>% # identify data set
   select(survey_date, amphibian_species, amphibian_life_stage) %>% # Only select certain columns
   filter(amphibian_species == "RAMU", amphibian_life_stage != "EggMass") # filter for species "RAMU" and remove "EggMass" life stage
 
-# create new dataset with species name spelled out
-amphibians_ramu <- amphibians_subset %>% 
+# create new data set with species name spelled out
+amphibians_ramu <- amphibians_subset %>% # identify data set
   mutate(amphibian_species = case_when(
-    amphibian_species == "RAMU" ~ "Rana muscosa"
+    amphibian_species == "RAMU" ~ "Rana muscosa" # spell out scientific name of species
   ))
 
 # create a summary table to find counts of Rana muscosa by year and life stage
-ramu_summary <- amphibians_ramu %>% 
+ramu_summary <- amphibians_ramu %>% # create a summary table
   group_by(survey_date, amphibian_life_stage) %>% 
-  summarize(count = n())
+  summarize(count = n()) # count number of individuals by year and life stage
+```
 
-# create a viualizing plotting year and life stage against number of individuals
-ggplot(data = ramu_summary,
-       aes(x = survey_date, y = count)) +
-  geom_col() +
-  facet_wrap(~amphibian_life_stage)
+### First Data Visualization
+
+```{r}
+# create a visualizing plotting year and life stage against number of individuals
+ggplot(data = ramu_summary, # identify data
+       aes(x = survey_date, y = count)) + # set x and y parameters
+  geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") + # define a column graph and change plot colors
+  facet_wrap(~amphibian_life_stage) + # separate counts graph by life stage
+  labs(title = "Mountain Yellow-Legged Frog Counts \nby Year Among Life Stages", # add a title
+       x = "Year", # change x-axis label
+       y = "Number of Individuals") + # change y-axis label
+  theme(plot.title = element_text(hjust = 0.5), # center title text
+        plot.background = element_rect(fill = "aliceblue"),
+        panel.background = element_rect(fill = "gray95")) # color background of plot
 ```
 
