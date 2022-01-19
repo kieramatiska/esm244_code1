@@ -62,3 +62,33 @@ ggplot(data = ramu_summary, # identify data
         panel.background = element_rect(fill = "gray95")) # color background of plot
 ```
 
+## Wrangle Data for Visualization # 2
+
+```{r}
+amphibians_subset1 <- amphibians_date %>% 
+  select(lake_id, survey_date, amphibian_species, amphibian_life_stage, amphibian_number) %>% 
+  filter(amphibian_species == "RAMU",
+         amphibian_life_stage %in% c("Adult", "SubAdult")) %>% 
+  arrange(desc(amphibian_number)) %>% 
+  slice(1:5)
+
+amphibians_ramu_lake <- amphibians_subset1 %>% 
+  mutate(amphibian_species = case_when(
+    amphibian_species == "RAMU" ~ "Rana muscosa" # spell out scientific name of species
+  )) %>% 
+  mutate(lake_id = case_when(
+    lake_id == "10223" ~ "Lake 10223",
+    lake_id == "20196" ~ "Lake 20196",
+    lake_id == "10228" ~ "Lake 10228",
+    lake_id == "10329" ~ "Lake 10329"
+  ))
+```
+
+### Visualize Data
+
+```{r}
+ggplot(data = amphibians_ramu_lake, 
+       aes(x = lake_id, y = amphibian_number)) +
+  geom_col(aes(fill = amphibian_life_stage), cols = 5)
+```
+
