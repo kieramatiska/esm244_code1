@@ -14,6 +14,7 @@ library(here)
 library(patchwork)
 library(cowplot)
 library(lubridate)
+library(paletteer)
 ```
 
 ## Read in data
@@ -69,26 +70,36 @@ amphibians_subset1 <- amphibians_date %>%
   select(lake_id, survey_date, amphibian_species, amphibian_life_stage, amphibian_number) %>% 
   filter(amphibian_species == "RAMU",
          amphibian_life_stage %in% c("Adult", "SubAdult")) %>% 
-  arrange(desc(amphibian_number)) %>% 
-  slice(1:5)
+  mutate(lake_id = as.character(lake_id))
 
-amphibians_ramu_lake <- amphibians_subset1 %>% 
-  mutate(amphibian_species = case_when(
-    amphibian_species == "RAMU" ~ "Rana muscosa" # spell out scientific name of species
-  )) %>% 
+ramu_summary1 <- amphibians_subset1 %>% 
+  group_by(lake_id) %>% 
+  summarize(total_lake_counts = sum(amphibian_number))
+
+amphibian_ramu_lake <- ramu_summary1 %>% 
+  arrange(desc(total_lake_counts)) %>% 
+  slice(1:5) %>% 
   mutate(lake_id = case_when(
+    lake_id == "50183" ~ "Lake 50183",
     lake_id == "10223" ~ "Lake 10223",
+    lake_id == "10329" ~ "Lake 10329",
     lake_id == "20196" ~ "Lake 20196",
-    lake_id == "10228" ~ "Lake 10228",
-    lake_id == "10329" ~ "Lake 10329"
+    lake_id == "10225" ~ "Lake 10225"
   ))
+
 ```
 
 ### Visualize Data
 
 ```{r}
-ggplot(data = amphibians_ramu_lake, 
-       aes(x = lake_id, y = amphibian_number)) +
-  geom_col(aes(fill = amphibian_life_stage), cols = 5)
+ggplot(data = amphibian_ramu_lake, 
+       aes(x = reorder(lake_id, -total_lake_counts), y = total_lake_counts)) +
+  geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") +
+  labs(title = "Top Five Mountain Yellow-Legged \nFrog Counts by Lake ID",
+       x = "Lake ID",
+       y = "Number of Individuals") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.background = element_rect(fill = "aliceblue"),
+        panel.background = element_rect(fill = "gray95"))
 ```
 
