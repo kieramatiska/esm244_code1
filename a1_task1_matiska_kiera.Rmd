@@ -51,7 +51,7 @@ ramu_summary <- amphibians_ramu %>% # create a summary table
 
 ```{r}
 # create a visualizing plotting year and life stage against number of individuals
-ggplot(data = ramu_summary, # identify data
+p1 <- ggplot(data = ramu_summary, # identify data
        aes(x = survey_date, y = count)) + # set x and y parameters
   geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") + # define a column graph and change plot colors
   facet_wrap(~amphibian_life_stage) + # separate counts graph by life stage
@@ -92,7 +92,7 @@ amphibian_ramu_lake <- ramu_summary1 %>%
 ### Visualize Data
 
 ```{r}
-ggplot(data = amphibian_ramu_lake, 
+p2 <- ggplot(data = amphibian_ramu_lake, 
        aes(x = reorder(lake_id, -total_lake_counts), y = total_lake_counts)) +
   geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") +
   labs(title = "Top Five Mountain Yellow-Legged \nFrog Counts by Lake ID",
@@ -101,5 +101,13 @@ ggplot(data = amphibian_ramu_lake,
   theme(plot.title = element_text(hjust = 0.5),
         plot.background = element_rect(fill = "aliceblue"),
         panel.background = element_rect(fill = "gray95"))
+```
+
+## Add to visualizations together into a single compound
+
+```{r}
+plot_grid(p1,
+          p2,
+          labels = c("A", "B"))
 ```
 
