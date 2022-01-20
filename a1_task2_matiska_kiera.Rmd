@@ -1,0 +1,15 @@
+---
+title: "HW1 Task 2"
+author: "Kiera Matiska"
+date: "1/20/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# attach packages
+library(tidyverse)
+library(here)
+```
+
