@@ -1,29 +1,28 @@
 ---
-title: "HW 1"
+title: "Mountain Yellow-Legged Frog Population Analysis"
 author: "Kiera Matiska"
 date: "1/16/2022"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Overview
+
+In the Sierra Nevada Mountains, numerous non-native species have found their home within the ecosystem. A recent research project collected data on the non-native species that have been found within Sierra Nevada lakes and recorded their populations in different lakes by the species different life stages (e.g. EggMass, Tadpoles, SubAdult, and Adult). The species in which information was collected include *Bufo boreas*, *Bufo canorus*, *Clemmys marmorata*, *Hyla regilla*, *Rana muscosa*, *Taricha torosa*, *Thamnophis couchi*, *Thamnophis elegans*, *Thamnophis sirtalis*, and *Rana catesbeiana*. In this report, I will wrangle data to look at only the species *Rana muscosa*, commonly known as the Mountain Yellow-Legged Frog, and will create two visualizations; the first one will look at the frog population throughout three life stages over 8 years while the second will look at the top five lakes with the largest Yellow-Legged Frog population over the 8 years.
+
+```{r setup, include=FALSE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 # attach packages
 library(tidyverse)
 library(here)
-library(patchwork)
 library(cowplot)
 library(lubridate)
 library(paletteer)
 ```
 
-## Read in data
-
 ```{r}
 amphibians <- read_csv(here("data", "sierra_amphibians.csv")) # read in the csv file
 ```
-
-## Wrangle Data for first visualization
 
 ```{r}
 # change survey_date column to a value with only the year
@@ -33,12 +32,13 @@ amphibians_date <- amphibians %>% # identify data set
 # Create data subset
 amphibians_subset <- amphibians_date %>% # identify data set
   select(survey_date, amphibian_species, amphibian_life_stage) %>% # Only select certain columns
-  filter(amphibian_species == "RAMU", amphibian_life_stage != "EggMass") # filter for species "RAMU" and remove "EggMass" life stage
+  filter(amphibian_species == "RAMU", # filter inputs in amphibian_species
+         amphibian_life_stage != "EggMass") # filter inputs in amphibian_life_stage
 
 # create new data set with species name spelled out
 amphibians_ramu <- amphibians_subset %>% # identify data set
-  mutate(amphibian_species = case_when(
-    amphibian_species == "RAMU" ~ "Rana muscosa" # spell out scientific name of species
+  mutate(amphibian_species = case_when( # rename aphibian_species inputs
+    amphibian_species == "RAMU" ~ "Rana muscosa" 
   ))
 
 # create a summary table to find counts of Rana muscosa by year and life stage
@@ -47,39 +47,43 @@ ramu_summary <- amphibians_ramu %>% # create a summary table
   summarize(count = n()) # count number of individuals by year and life stage
 ```
 
-### First Data Visualization
-
 ```{r}
 # create a visualizing plotting year and life stage against number of individuals
-p1 <- ggplot(data = ramu_summary, # identify data
+p1 <- ggplot(data = ramu_summary, # name visualization, call function, and identify data
        aes(x = survey_date, y = count)) + # set x and y parameters
-  geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") + # define a column graph and change plot colors
-  facet_wrap(~amphibian_life_stage) + # separate counts graph by life stage
-  labs(title = "Mountain Yellow-Legged Frog Counts \nby Year Among Life Stages", # add a title
+  geom_col(aes(fill = amphibian_life_stage), color = "darkolivegreen4") + # define a column graph and change plot colors
+  scale_fill_paletteer_d("ggthemes::excel_Green") + # use paletter package to change plot colors
+  labs(title = "Mountain Yellow-Legged Frog Counts \nAmong Life Stages - 1995-2002", # add a title
        x = "Year", # change x-axis label
-       y = "Number of Individuals") + # change y-axis label
-  theme(plot.title = element_text(hjust = 0.5), # center title text
-        plot.background = element_rect(fill = "aliceblue"),
-        panel.background = element_rect(fill = "gray95")) # color background of plot
+       y = "Number of Individuals", # change y-axis label
+       fill = "Life Stage") + # change legend header
+  theme(plot.title = element_text(hjust = 0.5, size = unit(12, "mm")), # center and resize title text
+        plot.background = element_rect(fill = "aliceblue"), # color background of plot
+        panel.background = element_rect(fill = "gray95"), # color background of panel
+        legend.key.size = unit(4, "mm"), # change legend size
+        legend.title = element_text(size = unit(10, "mm")), # change legend title size
+        legend.text = element_text(size = unit(7, "mm")), # change legend text size
+        axis.title = element_text(size = unit(10, "mm"))) # resize axis text
 ```
 
-## Wrangle Data for Visualization # 2
-
 ```{r}
-amphibians_subset1 <- amphibians_date %>% 
-  select(lake_id, survey_date, amphibian_species, amphibian_life_stage, amphibian_number) %>% 
-  filter(amphibian_species == "RAMU",
-         amphibian_life_stage %in% c("Adult", "SubAdult")) %>% 
-  mutate(lake_id = as.character(lake_id))
+# create a new baseline subset for this second visualization
+amphibians_subset1 <- amphibians_date %>% # make a new subset
+  select(lake_id, survey_date, amphibian_species, amphibian_life_stage, amphibian_number) %>% # choose these columns
+  filter(amphibian_species == "RAMU", # filter inputs in amphibian_species
+         amphibian_life_stage %in% c("Adult", "SubAdult")) %>% # filter inputs in amphibian_life_stage
+  mutate(lake_id = as.character(lake_id)) # change lake_id to a character
 
-ramu_summary1 <- amphibians_subset1 %>% 
-  group_by(lake_id) %>% 
-  summarize(total_lake_counts = sum(amphibian_number))
+# make a new summary table with amphibian total counts among lake IDs
+ramu_summary1 <- amphibians_subset1 %>% # make a new summary table
+  group_by(lake_id) %>% # use lake_id as the grouping variable
+  summarize(total_lake_counts = sum(amphibian_number)) # sum the number of total amphibian individuals
 
-amphibian_ramu_lake <- ramu_summary1 %>% 
-  arrange(desc(total_lake_counts)) %>% 
-  slice(1:5) %>% 
-  mutate(lake_id = case_when(
+# make and finalize a new subset that will be used for a graph
+amphibian_ramu_lake <- ramu_summary1 %>% # create the new subset
+  arrange(desc(total_lake_counts)) %>% # organize counts from most to smallest
+  slice(1:5) %>% # only keep the lakes with the top 5 counts
+  mutate(lake_id = case_when( # rename lake_id inputs
     lake_id == "50183" ~ "Lake 50183",
     lake_id == "10223" ~ "Lake 10223",
     lake_id == "10329" ~ "Lake 10329",
@@ -89,25 +93,34 @@ amphibian_ramu_lake <- ramu_summary1 %>%
 
 ```
 
-### Visualize Data
-
 ```{r}
-p2 <- ggplot(data = amphibian_ramu_lake, 
-       aes(x = reorder(lake_id, -total_lake_counts), y = total_lake_counts)) +
-  geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") +
-  labs(title = "Top Five Mountain Yellow-Legged \nFrog Counts by Lake ID",
-       x = "Lake ID",
-       y = "Number of Individuals") +
-  theme(plot.title = element_text(hjust = 0.5),
-        plot.background = element_rect(fill = "aliceblue"),
-        panel.background = element_rect(fill = "gray95"))
+# create a plot visualizing the top 5 most RAMU populated lakes
+p2 <- ggplot(data = amphibian_ramu_lake, # name visualization, call function, and identify data
+       aes(x = reorder(lake_id, -total_lake_counts), y = total_lake_counts)) + # set x and y parameters
+  geom_col(fill = "darkolivegreen3", color = "darkolivegreen4") + # change plot colors
+  labs(title = "Most Populous Lakes with Mountain \nYellow-Legged Frog - 1995-2002", # add a title
+       x = "Lake ID", # rename x-axis
+       y = "Number of Individuals") + # rename y-axis
+  theme(plot.title = element_text(hjust = 0.5, size = unit(12, "mm")), # change position and size of title text
+        plot.background = element_rect(fill = "aliceblue"), # adjust plot color
+        panel.background = element_rect(fill = "gray95"), # adjust panel color
+        axis.text.x = element_text(angle = 35), # angle x-axis text
+        axis.title = element_text(size = unit(10, "mm"))) # change size of axis titles
 ```
 
-## Add to visualizations together into a single compound
+## Data Visualizations
 
 ```{r}
-plot_grid(p1,
-          p2,
-          labels = c("A", "B"))
+# Add visualizations into a single compound
+plot_grid(p1, # call function and identify visualization 1
+          p2, # identify visualization 2
+          labels = c("A", "B"), # label the two graphs
+          rel_widths = 5:3) # resize the plots
 ```
 
+
+**Figure 1.** (A) Mountain Yellow-Legged Frog Counts Among Life Stages from 1995-2002. Population of the Yellow-Legged Frog is shown at different life stages (Tadpole, SubAdult, and Adult) over 8 years. No data was collected for this species in 1998 or 1999. (B) Most Populous Lakes with Mountain Yellow-Legged Frogs from 1995 - 2002. Top five lakes were generates and given an ID to keep them anonymous. Between the five lakes, an average of 1,967 individuals of Mountain Yellow-Legged Frogs were found.
+
+#### Data Citation
+
+Knapp, R.A., C. Pavelka, E.E. Hegeman, and T.C. Smith. 2020. The Sierra Lakes Inventory Project: Non-Native fish and community composition of lakes and ponds in the Sierra Nevada, California ver 2. Environmental Data Initiative. https://doi.org/10.6073/pasta/d835832d7fd00d9e4466e44eea87fab3
