@@ -41,8 +41,114 @@ AIC(mdl1, mdl2) # 618.3868, 615.7016
 
 AICc(mdl1) # 619.0251
 AICc(mdl2) # 616.6048
+aictab(list(mdl1, mdl2))
 ```
 
-Based on the AIC scores, the second model is the better out of the two
+Based on the AIC scores, the second model is the better out of the two. The difference between the two models is `r 619.0251 - 616.6048`.
+
+#### K-fold Cross Validation
+
+```{r}
+n_folds <- 10
+fold <- rep(1:n_folds, length.out = nrow(seawater_chem))
+table(fold)
+
+set.seed(42)
+
+seawater_fold <- seawater_chem %>% 
+  mutate(group = sample(fold, size = n(), replace = FALSE))
+
+# first fold
+test_df <- seawater_fold %>% 
+  filter(group == 1)
+train_df <- seawater_fold %>% 
+  filter(group != 1)
+```
+
+Calculate root mean square
+
+```{r}
+calc_rmse <- function(x, y) {
+  rmse_result <- (x - y)^2 %>% mean() %>% sqrt()
+  return(rmse_result)
+}
+```
+
+Create training datasets using the two equations above
+
+```{r}
+training_mdl1 <- lm(f1, data = train_df)
+training_mdl2 <- lm(f2, data = train_df)
+```
+
+Use trained models to predict on test data
+
+```{r}
+seawater_predict <- test_df %>% 
+  mutate(model1 = predict(training_mdl1, test_df),
+         model2 = predict(training_mdl2, test_df))
+
+seawater_rmse <- seawater_predict %>% 
+  summarize(seawater_rmse_mdl1 = calc_rmse(model1, o2sat),
+            seawater_rmse_mdl2 = calc_rmse(model2, o2sat))
+
+seawater_rmse
+# seawater_rmse_mdl1       seawater_rmse_mdl2
+#              <dbl>                    <dbl>
+#           8.859422                 9.497512
+```
+
+Let's calculate over all folds and take the average
+
+```{r}
+seawater_rmse_df <- data.frame()
+
+for(i in 1:n_folds) {
+  kfold_test_df <- seawater_fold %>% 
+    filter(group == i)
+  kfold_train_df <- seawater_fold %>% 
+    filter(group == i)
+  
+  kfold_mdl1 <- lm(f1, data = kfold_train_df)
+  kfold_mdl2 <- lm(f2, data = kfold_train_df)
+  
+  kfold_pred_df <- kfold_test_df %>% 
+    mutate(mdl1 = predict(kfold_mdl1, kfold_test_df),
+           mdl2 = predict(kfold_mdl2, .))
+  kfold_rmse <- kfold_pred_df %>% 
+    summarize(rmse_mdl1 = calc_rmse(mdl1, o2sat),
+              rmse_mdl2 = calc_rmse(mdl2, o2sat))
+  seawater_rmse_df <- bind_rows(seawater_rmse_df, kfold_rmse)
+}
+
+seawater_rmse_df %>% 
+  summarize(mean_rmse_mdl1 = mean(rmse_mdl1),
+            mean_rmse_mdl2 = mean(rmse_mdl2))
+```
+Model 2 has the lowest RMSE, which means it is the better model of the two and we should chose it
+
+### Final Model Choice After Cross-Validation
+
+```{r}
+final_seawater_mdl <- lm(f2, data = seawater_chem)
+summary(final_seawater_mdl)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
