@@ -9,8 +9,8 @@ output: html_document
 
 In the Sierra Nevada Mountains, numerous non-native species have found their home within the ecosystem. A recent research project collected data on the non-native species that have been found within Sierra Nevada lakes and recorded their populations in different lakes by the species different life stages (e.g. EggMass, Tadpoles, SubAdult, and Adult). The species in which information was collected include *Bufo boreas*, *Bufo canorus*, *Clemmys marmorata*, *Hyla regilla*, *Rana muscosa*, *Taricha torosa*, *Thamnophis couchi*, *Thamnophis elegans*, *Thamnophis sirtalis*, and *Rana catesbeiana*. In this report, I will wrangle data to look at only the species *Rana muscosa*, commonly known as the Mountain Yellow-Legged Frog, and will create two visualizations; the first one will look at the frog population throughout three life stages over 8 years while the second will look at the top five lakes with the largest Yellow-Legged Frog population over the 8 years.
 
-```{r setup, include=FALSE, warning = FALSE, message = FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```{r setup, include=TRUE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
 # attach packages
 library(tidyverse)
@@ -20,9 +20,19 @@ library(lubridate)
 library(paletteer)
 ```
 
+## Read in data
+
 ```{r}
 amphibians <- read_csv(here("data", "sierra_amphibians.csv")) # read in the csv file
 ```
+
+## Wrangle data for, and create, the first visualization
+
+On a column graph, the graph will plot:
+
+- year on the x-axis
+- number of individuals on the y-axis
+- with column distinctions of life stage
 
 ```{r}
 # change survey_date column to a value with only the year
@@ -65,6 +75,14 @@ p1 <- ggplot(data = ramu_summary, # name visualization, call function, and ident
         legend.text = element_text(size = unit(7, "mm")), # change legend text size
         axis.title = element_text(size = unit(10, "mm"))) # resize axis text
 ```
+
+## Wrangle data for, and create, the second visualization
+
+Using a column graph, the graph will plot:
+
+- the five lakes with the most abundant populations of Mountain Yellow-Legged Frog (*Rana muscosa*)
+- lake id on the x-axis
+- number of individuals on the y-axis
 
 ```{r}
 # create a new baseline subset for this second visualization
