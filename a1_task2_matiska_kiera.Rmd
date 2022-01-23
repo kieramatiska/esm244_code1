@@ -4,6 +4,9 @@ author: "Kiera Matiska"
 date: "1/20/2022"
 output: html_document
 ---
+# Overview:
+
+Ocean chemistry is important for monitoring ocean health. This data analysis looks to find the model that gives the most accurate O_2 saturation level based on different chemistry factors in the ocean. The data used for this analysis is from seawater off the coast of California, and levels have been recorded since 1949. The variables measured for this data include oxygen saturation levels, temperature in degrees Celsius, salinity, depth in meters, chlorophyll-a concentrations measured in micro-grams per liter, phosphate concentration in micro-moles per liter, and nitrite concentrations in micro-moles per liter. For this analysis, two multiple linear regression models will be generated to calculate Oxygen Saturation levels, and the models will be compared using AIC values and cross-validation.
 
 ```{r setup, include=TRUE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
@@ -25,7 +28,7 @@ seawater_chem <- read_csv(here("data", "calcofi_seawater_samples.csv")) # read i
 ## Create two multiple linear regression models
 
 - Model 1: Oxygen saturation as a function of water temperature, salinity, and phosphate concentration
-- Model 2: Oxygen saturation as a function of water temp, salinity, phosphate concentration, and depth.
+- Model 2: Oxygen saturation as a function of water temperature, salinity, phosphate concentration, and depth.
 
 ```{r}
 f1 <- o2sat ~ t_deg_c + salinity + po4u_m # first model
@@ -42,9 +45,13 @@ AIC(seawater_mdl1, seawater_mdl2) # 618.3868, 615.7016; calculate AIC values
 
 AICc(seawater_mdl1) # 619.0251; calculate AICc value for model 1
 AICc(seawater_mdl2) # 616.6048; calculate AICc value for model 2
+```
+
+**Table 1.** AIC values for the two different models and the difference between the two values
+```{r}
 aictab(list(seawater_mdl1, seawater_mdl2)) %>% # identify difference between the AIC values
   kable() %>% # create a finalized table with the values
-  kable_styling(position = "center")
+  kable_styling(position = "center") # center the table
 ```
 
 Based on the AIC scores, the second model is the better out of the two. The difference between the two models is `r 619.0251 - 616.6048`.
@@ -68,7 +75,7 @@ seawater_train_df <- seawater_fold %>%
   filter(group != 1)
 ```
 
-Calculate root mean square
+Function for Root-Mean-Square Values
 
 ```{r}
 # root mean square = (x-y)^2, take the mean, and then square root the mean number
@@ -93,16 +100,20 @@ seawater_predict <- seawater_test_df %>%
   mutate(model1 = predict(training_mdl1, seawater_test_df),
          model2 = predict(training_mdl2, seawater_test_df))
 
+# find RMSE values for the two models using prediction data
 seawater_rmse <- seawater_predict %>% 
   summarize(seawater_rmse_mdl1 = calc_rmse(model1, o2sat),
             seawater_rmse_mdl2 = calc_rmse(model2, o2sat))
-
-seawater_rmse %>%  
-  kable() %>% 
-  kable_styling(position = "center")
 ```
 
-Let's calculate over all folds and take the average
+**Table 2.** Predicted RMSE values for models 1 and 2 based on the test data frame.
+```{r}
+seawater_rmse %>%  
+  kable() %>% # create a table with this information
+  kable_styling(position = "center") # center the table
+```
+
+Calculations over all folds and take the average
 
 ```{r}
 seawater_rmse_df <- data.frame()
@@ -130,7 +141,16 @@ seawater_rmse_df %>%
             mean_rmse_mdl2 = mean(rmse_mdl2))
 ```
 
-Model 2 has both the lowest RMSE and AIC values, therefore it is the better model out of the two.
+**Table 3.** RMSE values for Models 1 and 2.
+```{r}
+kfold_rmse %>% 
+  kable() %>% 
+  kable_styling(position = "center")
+```
+
+Based on this cross validation, the root-mean-square of model 1 is `r round(kfold_rmse$rmse_mdl1[1], 2)`. Model 2's root-mean square value is `r round(kfold_rmse$rmse_mdl2[1], 2)`. Since model 2 has the smallest root-square value, it is the better model of the two.
+
+Based on the AIC values and root-mean-square values of model 1 and model 2, model 2 is the best because it has both the smallest AIC value and root-mean-square value.
 
 ## Final Model Choice After Cross-Validation and AIC calculations
 
@@ -139,10 +159,10 @@ final_seawater_mdl <- lm(f2, data = seawater_chem)
 summary(final_seawater_mdl)
 ```
 
-Final Equation: `r extract_eq(final_seawater_mdl, wrap = TRUE, use_coefs = TRUE)`
+Since Model 2 is the better model, the final equation is:
 
-Your organized code, with clear subsections and any useful descriptive text / annotation (e.g. if you wanted to highlight this as a code example for a prospective employer).  **Include an overview of the data and your exploration, and a citation for the data.  Suppress all warnings and messages, but show all attached packages.**
-Your comparison of the two (or three?) models using an appropriate application of AIC, with the resulting AIC scores and an interpretation of how to choose the best model with this information.  **Communicate results in a nicely formatted manner (in-line code chunks, kable or other formatted table, etc).**
-Your comparison of the two (or three?) models using a 10-fold cross validation, with the resulting average RMSE value across all folds, and an interpretation of how to choose the better model with this information.  **Communicate results in a nicely formatted manner (in-line code chunks, kable or other formatted table, etc).**
-The final parameterized model (including coefficient values) expressed as a formatted equation (using equatiomatic or LaTeX).  **If your two model selection methods identify different models, select the result of one method and explain why you prefer that method.**
+`r extract_eq(final_seawater_mdl, wrap = TRUE, use_coefs = TRUE)`
 
+#### Data Citation
+
+CalCOFI data are available for use without restriction. Data downloaded from https://calcofi.org/ccdata.html.  Accessed 1/20/2022.
