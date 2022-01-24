@@ -175,7 +175,7 @@ pre code {
 
 <div id="overview" class="section level1">
 <h1>Overview:</h1>
-<p>Ocean chemistry is important for monitoring ocean health. This data analysis looks to find the model that gives the most accurate O_2 saturation level based on different chemistry factors in the ocean. The data used for this analysis is from seawater off the coast of California, and levels have been recorded since 1949. The variables measured for this data include oxygen saturation levels, temperature in degrees Celsius, salinity, depth in meters, chlorophyll-a concentrations measured in micro-grams per liter, phosphate concentration in micro-moles per liter, and nitrite concentrations in micro-moles per liter. For this analysis, two multiple linear regression models will be generated to calculate Oxygen Saturation levels, and the models will be compared using AIC values and cross-validation.</p>
+<p>Ocean chemistry is important for monitoring ocean health. This data analysis looks to find the model that gives the most accurate oxygen saturation level based on different chemistry factors in the ocean. The data used for this analysis is from seawater off the coast of California, and levels have been recorded since 1949. The variables measured for this data include oxygen saturation levels, temperature in degrees Celsius, salinity, depth in meters, chlorophyll-a concentrations measured in micro-grams per liter, phosphate concentration in micro-moles per liter, and nitrite concentrations in micro-moles per liter. For this analysis, two multiple linear regression models will be generated to calculate Oxygen Saturation levels, and the models will be compared using AIC values and cross-validation.</p>
 <pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # attach packages
@@ -371,9 +371,9 @@ seawater_rmse_mdl2
 </tbody>
 </table>
 <p>Calculations over all folds and take the average</p>
-<pre class="r"><code>seawater_rmse_df &lt;- data.frame()
+<pre class="r"><code>seawater_rmse_df &lt;- data.frame() # create a data frame that will hold the data ran below
 
-for(i in 1:n_folds) {
+for(i in 1:n_folds) { # strat the cross validation tests
   kfold_test_df &lt;- seawater_fold %&gt;% 
     filter(group == i)
   kfold_train_df &lt;- seawater_fold %&gt;% 
@@ -391,15 +391,15 @@ for(i in 1:n_folds) {
   seawater_rmse_df &lt;- bind_rows(seawater_rmse_df, kfold_rmse)
 }
 
-seawater_rmse_df %&gt;% 
+seawater_rmse_df %&gt;% # update the data frame to include the mean RMSE value of both models
   summarize(mean_rmse_mdl1 = mean(rmse_mdl1),
             mean_rmse_mdl2 = mean(rmse_mdl2))</code></pre>
 <pre><code>##   mean_rmse_mdl1 mean_rmse_mdl2
 ## 1       3.550237       2.975896</code></pre>
 <p><strong>Table 3.</strong> RMSE values for Models 1 and 2.</p>
 <pre class="r"><code>kfold_rmse %&gt;% 
-  kable() %&gt;% 
-  kable_styling(position = &quot;center&quot;)</code></pre>
+  kable() %&gt;% # create a summary table
+  kable_styling(position = &quot;center&quot;) # center the summary table</code></pre>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -428,8 +428,8 @@ rmse_mdl2
 </div>
 <div id="final-model-choice-after-cross-validation-and-aic-calculations" class="section level2">
 <h2>Final Model Choice After Cross-Validation and AIC calculations</h2>
-<pre class="r"><code>final_seawater_mdl &lt;- lm(f2, data = seawater_chem)
-summary(final_seawater_mdl)</code></pre>
+<pre class="r"><code>final_seawater_mdl &lt;- lm(f2, data = seawater_chem) # name the final model
+summary(final_seawater_mdl) # get summary statistics of the model</code></pre>
 <pre><code>## 
 ## Call:
 ## lm(formula = f2, data = seawater_chem)

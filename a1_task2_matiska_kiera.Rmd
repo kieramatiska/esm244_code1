@@ -6,7 +6,7 @@ output: html_document
 ---
 # Overview:
 
-Ocean chemistry is important for monitoring ocean health. This data analysis looks to find the model that gives the most accurate O_2 saturation level based on different chemistry factors in the ocean. The data used for this analysis is from seawater off the coast of California, and levels have been recorded since 1949. The variables measured for this data include oxygen saturation levels, temperature in degrees Celsius, salinity, depth in meters, chlorophyll-a concentrations measured in micro-grams per liter, phosphate concentration in micro-moles per liter, and nitrite concentrations in micro-moles per liter. For this analysis, two multiple linear regression models will be generated to calculate Oxygen Saturation levels, and the models will be compared using AIC values and cross-validation.
+Ocean chemistry is important for monitoring ocean health. This data analysis looks to find the model that gives the most accurate oxygen saturation level based on different chemistry factors in the ocean. The data used for this analysis is from seawater off the coast of California, and levels have been recorded since 1949. The variables measured for this data include oxygen saturation levels, temperature in degrees Celsius, salinity, depth in meters, chlorophyll-a concentrations measured in micro-grams per liter, phosphate concentration in micro-moles per liter, and nitrite concentrations in micro-moles per liter. For this analysis, two multiple linear regression models will be generated to calculate Oxygen Saturation levels, and the models will be compared using AIC values and cross-validation.
 
 ```{r setup, include=TRUE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
@@ -116,9 +116,9 @@ seawater_rmse %>%
 Calculations over all folds and take the average
 
 ```{r}
-seawater_rmse_df <- data.frame()
+seawater_rmse_df <- data.frame() # create a data frame that will hold the data ran below
 
-for(i in 1:n_folds) {
+for(i in 1:n_folds) { # strat the cross validation tests
   kfold_test_df <- seawater_fold %>% 
     filter(group == i)
   kfold_train_df <- seawater_fold %>% 
@@ -136,7 +136,7 @@ for(i in 1:n_folds) {
   seawater_rmse_df <- bind_rows(seawater_rmse_df, kfold_rmse)
 }
 
-seawater_rmse_df %>% 
+seawater_rmse_df %>% # update the data frame to include the mean RMSE value of both models
   summarize(mean_rmse_mdl1 = mean(rmse_mdl1),
             mean_rmse_mdl2 = mean(rmse_mdl2))
 ```
@@ -144,8 +144,8 @@ seawater_rmse_df %>%
 **Table 3.** RMSE values for Models 1 and 2.
 ```{r}
 kfold_rmse %>% 
-  kable() %>% 
-  kable_styling(position = "center")
+  kable() %>% # create a summary table
+  kable_styling(position = "center") # center the summary table
 ```
 
 Based on this cross validation, the root-mean-square of model 1 is `r round(kfold_rmse$rmse_mdl1[1], 2)`. Model 2's root-mean square value is `r round(kfold_rmse$rmse_mdl2[1], 2)`. Since model 2 has the smallest root-square value, it is the better model of the two.
@@ -155,8 +155,8 @@ Based on the AIC values and root-mean-square values of model 1 and model 2, mode
 ## Final Model Choice After Cross-Validation and AIC calculations
 
 ```{r}
-final_seawater_mdl <- lm(f2, data = seawater_chem)
-summary(final_seawater_mdl)
+final_seawater_mdl <- lm(f2, data = seawater_chem) # name the final model
+summary(final_seawater_mdl) # get summary statistics of the model
 ```
 
 Since Model 2 is the better model, the final equation is:
