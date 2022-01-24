@@ -41,7 +41,7 @@ amphibians_date <- amphibians %>% # identify data set
 
 # Create data subset
 amphibians_subset <- amphibians_date %>% # identify data set
-  select(survey_date, amphibian_species, amphibian_life_stage) %>% # Only select certain columns
+  select(survey_date, amphibian_species, amphibian_life_stage, amphibian_number) %>% # Only select certain columns
   filter(amphibian_species == "RAMU", # filter inputs in amphibian_species
          amphibian_life_stage != "EggMass") # filter inputs in amphibian_life_stage
 
@@ -54,7 +54,7 @@ amphibians_ramu <- amphibians_subset %>% # identify data set
 # create a summary table to find counts of Rana muscosa by year and life stage
 ramu_summary <- amphibians_ramu %>% # create a summary table
   group_by(survey_date, amphibian_life_stage) %>% 
-  summarize(count = n()) # count number of individuals by year and life stage
+  summarize(count = sum(amphibian_number)) # count number of individuals by year and life stage
 ```
 
 ```{r}
