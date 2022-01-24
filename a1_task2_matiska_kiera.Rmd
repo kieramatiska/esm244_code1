@@ -41,10 +41,10 @@ seawater_mdl2 <- lm(f2, data = seawater_chem) # multiple linear regression of mo
 ### Compare AIC values for the two models
 
 ```{r}
-AIC(seawater_mdl1, seawater_mdl2) # 618.3868, 615.7016; calculate AIC values
+AIC_both <- AIC(seawater_mdl1, seawater_mdl2) # 618.3868, 615.7016; calculate AIC values
 
-AICc(seawater_mdl1) # 619.0251; calculate AICc value for model 1
-AICc(seawater_mdl2) # 616.6048; calculate AICc value for model 2
+AIC_mdl1 <- AICc(seawater_mdl1) # 619.0251; calculate AICc value for model 1
+AIC_mdl2 <- AICc(seawater_mdl2) # 616.6048; calculate AICc value for model 2
 ```
 
 **Table 1.** AIC values for the two different models and the difference between the two values
@@ -61,7 +61,7 @@ Based on the AIC scores, the second model is the better out of the two. The diff
 ```{r}
 n_folds <- 10 # define 10 folds
 fold <- rep(1:n_folds, length.out = nrow(seawater_chem)) 
-table(fold) # create a table with the fold values
+table <- table(fold) # create a table with the fold values
 
 set.seed(42) # set seed to continue to keep values the same
 
@@ -136,7 +136,7 @@ for(i in 1:n_folds) { # strat the cross validation tests
   seawater_rmse_df <- bind_rows(seawater_rmse_df, kfold_rmse)
 }
 
-seawater_rmse_df %>% # update the data frame to include the mean RMSE value of both models
+seawater_rmse_dfog <- seawater_rmse_df %>% # update the data frame to include the mean RMSE value of both models
   summarize(mean_rmse_mdl1 = mean(rmse_mdl1),
             mean_rmse_mdl2 = mean(rmse_mdl2))
 ```
@@ -156,7 +156,7 @@ Based on the AIC values and root-mean-square values of model 1 and model 2, mode
 
 ```{r}
 final_seawater_mdl <- lm(f2, data = seawater_chem) # name the final model
-summary(final_seawater_mdl) # get summary statistics of the model
+summary_final_seawater_mdl <- summary(final_seawater_mdl) # get summary statistics of the model
 ```
 
 Since Model 2 is the better model, the final equation is:

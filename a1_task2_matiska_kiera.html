@@ -201,14 +201,10 @@ f2 &lt;- o2sat ~ t_deg_c + salinity + po4u_m + depth_m # second model
 seawater_mdl2 &lt;- lm(f2, data = seawater_chem) # multiple linear regression of model</code></pre>
 <div id="compare-aic-values-for-the-two-models" class="section level3">
 <h3>Compare AIC values for the two models</h3>
-<pre class="r"><code>AIC(seawater_mdl1, seawater_mdl2) # 618.3868, 615.7016; calculate AIC values</code></pre>
-<pre><code>##               df      AIC
-## seawater_mdl1  5 618.3868
-## seawater_mdl2  6 615.7016</code></pre>
-<pre class="r"><code>AICc(seawater_mdl1) # 619.0251; calculate AICc value for model 1</code></pre>
-<pre><code>## [1] 619.0251</code></pre>
-<pre class="r"><code>AICc(seawater_mdl2) # 616.6048; calculate AICc value for model 2</code></pre>
-<pre><code>## [1] 616.6048</code></pre>
+<pre class="r"><code>AIC_both &lt;- AIC(seawater_mdl1, seawater_mdl2) # 618.3868, 615.7016; calculate AIC values
+
+AIC_mdl1 &lt;- AICc(seawater_mdl1) # 619.0251; calculate AICc value for model 1
+AIC_mdl2 &lt;- AICc(seawater_mdl2) # 616.6048; calculate AICc value for model 2</code></pre>
 <p><strong>Table 1.</strong> AIC values for the two different models and the difference between the two values</p>
 <pre class="r"><code>aictab(list(seawater_mdl1, seawater_mdl2)) %&gt;% # identify difference between the AIC values
   kable() %&gt;% # create a finalized table with the values
@@ -311,11 +307,9 @@ Mod1
 <h3>K-fold Cross Validation</h3>
 <pre class="r"><code>n_folds &lt;- 10 # define 10 folds
 fold &lt;- rep(1:n_folds, length.out = nrow(seawater_chem)) 
-table(fold) # create a table with the fold values</code></pre>
-<pre><code>## fold
-##  1  2  3  4  5  6  7  8  9 10 
-## 10 10 10 10 10 10 10 10 10 10</code></pre>
-<pre class="r"><code>set.seed(42) # set seed to continue to keep values the same
+table &lt;- table(fold) # create a table with the fold values
+
+set.seed(42) # set seed to continue to keep values the same
 
 seawater_fold &lt;- seawater_chem %&gt;% # create a subset
   mutate(group = sample(fold, size = n(), replace = FALSE)) # add a new group column
@@ -391,11 +385,9 @@ for(i in 1:n_folds) { # strat the cross validation tests
   seawater_rmse_df &lt;- bind_rows(seawater_rmse_df, kfold_rmse)
 }
 
-seawater_rmse_df %&gt;% # update the data frame to include the mean RMSE value of both models
+seawater_rmse_dfog &lt;- seawater_rmse_df %&gt;% # update the data frame to include the mean RMSE value of both models
   summarize(mean_rmse_mdl1 = mean(rmse_mdl1),
             mean_rmse_mdl2 = mean(rmse_mdl2))</code></pre>
-<pre><code>##   mean_rmse_mdl1 mean_rmse_mdl2
-## 1       3.550237       2.975896</code></pre>
 <p><strong>Table 3.</strong> RMSE values for Models 1 and 2.</p>
 <pre class="r"><code>kfold_rmse %&gt;% 
   kable() %&gt;% # create a summary table
@@ -429,28 +421,7 @@ rmse_mdl2
 <div id="final-model-choice-after-cross-validation-and-aic-calculations" class="section level2">
 <h2>Final Model Choice After Cross-Validation and AIC calculations</h2>
 <pre class="r"><code>final_seawater_mdl &lt;- lm(f2, data = seawater_chem) # name the final model
-summary(final_seawater_mdl) # get summary statistics of the model</code></pre>
-<pre><code>## 
-## Call:
-## lm(formula = f2, data = seawater_chem)
-## 
-## Residuals:
-##      Min       1Q   Median       3Q      Max 
-## -26.3023  -2.2828  -0.2479   2.1771  19.4459 
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 144.06686   95.36730   1.511   0.1342    
-## t_deg_c      -0.74981    0.40494  -1.852   0.0672 .  
-## salinity     -0.43945    2.98897  -0.147   0.8834    
-## po4u_m      -37.71159    2.50113 -15.078   &lt;2e-16 ***
-## depth_m      -0.03196    0.01497  -2.135   0.0354 *  
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Residual standard error: 5.08 on 95 degrees of freedom
-## Multiple R-squared:  0.9574, Adjusted R-squared:  0.9557 
-## F-statistic: 534.3 on 4 and 95 DF,  p-value: &lt; 2.2e-16</code></pre>
+summary_final_seawater_mdl &lt;- summary(final_seawater_mdl) # get summary statistics of the model</code></pre>
 <p>Since Model 2 is the better model, the final equation is:</p>
 <p><span class="math display">\[
 \begin{aligned}
